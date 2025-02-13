@@ -1,0 +1,3 @@
+[tool.ruff]
+lint.select = ["D"]
+lint.ignore = ["D203", "D213"]
