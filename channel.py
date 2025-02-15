@@ -1,9 +1,10 @@
 """channel.py - a simple message channel."""
 
 from flask import Flask, request, render_template, jsonify
+from flask_cors import CORS
 import json
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from better_profanity import profanity
 
 
@@ -17,15 +18,16 @@ class ConfigClass(object):
 
 # Create Flask app
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(__name__ + ".ConfigClass")  # Configuration
 app.app_context().push()  # Create an app context before initializing the app
 
-HUB_URL = "http://localhost:5555"
+HUB_URL = "http://127.0.0.1:5555"
 HUB_AUTHKEY = "1234567890"
 CHANNEL_AUTHKEY = "0987654321"
 CHANNEL_NAME = "The One and Only Channel"
 CHANNEL_ENDPOINT = (
-    "http://localhost:5001"  # Don't forget to adjust in the bottom of the file
+    "http://127.0.0.1:5001"  # Don't forget to adjust in the bottom of the file
 )
 CHANNEL_FILE = "messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
@@ -198,14 +200,14 @@ def save_messages(messages):
         json.dump(messages, f)
 
 def filter_old_messages(messages):
-    cutoff = datetime.now() - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
     return [message for message in messages if datetime.fromisoformat(message['timestamp']) >= cutoff]
 
 def init_message():
     inital_message = {
             "content": "Hello to our server. Here we discuss...",
             "sender": "Server",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     save_messages([inital_message])
 

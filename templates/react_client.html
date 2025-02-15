@@ -14,7 +14,7 @@
 
     <script type="text/babel">
 
-        function ChannelList() {
+        function ChannelList({ onSelectChannel, setUsername }) {
             // React component that shows a channel list
             // content is fetched from the university hub (works only on university network, use VPN)
             //
@@ -46,21 +46,89 @@
                         {filteredChannels.map(channel => (
                             <li key={channel.id}>
                                 {channel.name} (URL: {channel.endpoint}, Type: {channel.type_of_service})
+                                <button onClick={() => onSelectChannel(channel)}>Select</button>
                             </li>
                         ))}
                     </ul>
+                    <input
+                        type="text"
+                        placeholder="Username"
+                        onChange={e => setUsername(e.target.value)}
+                    />
                 </div>
             );
         }
 
-        // main code: render the ChannelList component, add more components here
-        ReactDOM.render(
-            <div>
-                <h1>Chat client: List of channels</h1>
-                <ChannelList />
+        function ChannelMessages({ selectedChannel, username }) {
+            const [messages, setMessages] = React.useState([]);
+            const [newMessage, setNewMessage] = React.useState('');
+            const [reload, setReload] = React.useState(0);
 
-            </div>,
-            document.getElementById('root'));
+            React.useEffect(() => {
+                if (selectedChannel) {
+                    fetch(`${selectedChannel.endpoint}`, {
+                            headers: {
+                                "Authorization": `authkey ${selectedChannel.authkey}`
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => setMessages(data));
+                }
+            }, [selectedChannel, reload]);
+
+            if (!selectedChannel) {
+                return <div>Please select a channel to view messages.</div>;
+            }
+
+            const handleSendMessage = () => {
+                fetch(`${selectedChannel.endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        "Authorization": `authkey ${selectedChannel.authkey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sender: username,
+                        content: newMessage,
+                        timestamp: new Date().toISOString(),
+                    }),
+                })
+                .then(() => setNewMessage(""))
+                .then(() => setReload(Math.random()));
+            };
+
+            return (
+                <div>
+                    <h2>Messages for {selectedChannel.name}</h2>
+                    <ul>
+                        {messages.map(message => (
+                            <li>{message.sender}: {message.content} <br/> {message.timestamp} </li>
+                        ))}
+                    </ul>
+
+                    <input type="text"
+                        value={newMessage}
+                        onChange={e => setNewMessage(e.target.value)}
+                        placeholder="Write message"/>
+                    <button onClick={handleSendMessage}>Send</button>
+                </div>
+            );
+        }
+
+        function App() {
+            const [selectedChannel, setSelectedChannel] = React.useState(null);
+            const [username, setUsername] = React.useState(null);
+
+            return (
+                <div>
+                    <h1>Chat client: List of channels</h1>
+                    <ChannelList onSelectChannel={setSelectedChannel} setUsername={setUsername} />
+                    <ChannelMessages selectedChannel={selectedChannel} username={username} />
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
 </html>

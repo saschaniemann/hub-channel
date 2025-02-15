@@ -1,14 +1,16 @@
 """Implementation of a client of a hub-channel application."""
 
 from flask import Flask, request, render_template, url_for, redirect
+from flask_cors import CORS
 import requests
 import urllib.parse
 import datetime
 
 app = Flask(__name__)
+CORS(app)
 
 HUB_AUTHKEY = "1234567890"
-HUB_URL = "http://localhost:5555"
+HUB_URL = "http://127.0.0.1:5555"
 
 CHANNELS = None
 LAST_CHANNEL_UPDATE = None
