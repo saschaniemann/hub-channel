@@ -3,6 +3,7 @@
 from flask import Flask, request, render_template, jsonify
 import json
 import requests
+import datetime
 
 
 # Class-based application configuration
@@ -193,10 +194,19 @@ def save_messages(messages):
     with open(CHANNEL_FILE, "w") as f:
         json.dump(messages, f)
 
+def init_message():
+    inital_message = {
+            "content": "Hello to our server. Here we discuss...",
+            "sender": "Server",
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+    save_messages([inital_message])
+
 
 # Start development web server
 # run flask --app channel.py register
 # to register channel with hub
 
 if __name__ == "__main__":
+    init_message()
     app.run(port=5001, debug=True)
