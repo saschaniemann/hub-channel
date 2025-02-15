@@ -3,7 +3,7 @@
 from flask import Flask, request, render_template, jsonify
 import json
 import requests
-import datetime
+from datetime import datetime, timedelta
 
 
 # Class-based application configuration
@@ -28,6 +28,7 @@ CHANNEL_ENDPOINT = (
 )
 CHANNEL_FILE = "messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
+CHANNEL_MAX_MESSAGE_AGE = 7
 
 
 @app.cli.command("register")
@@ -177,6 +178,7 @@ def read_messages():
     except json.decoder.JSONDecodeError:
         messages = []
     f.close()
+    messages = filter_old_messages(messages)
     return messages
 
 
@@ -192,13 +194,18 @@ def save_messages(messages):
     """
     global CHANNEL_FILE
     with open(CHANNEL_FILE, "w") as f:
+        messages = filter_old_messages(messages)
         json.dump(messages, f)
+
+def filter_old_messages(messages):
+    cutoff = datetime.now() - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
+    return [message for message in messages if datetime.fromisoformat(message['timestamp']) >= cutoff]
 
 def init_message():
     inital_message = {
             "content": "Hello to our server. Here we discuss...",
             "sender": "Server",
-            "timestamp": datetime.datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat()
         }
     save_messages([inital_message])
 
