@@ -4,6 +4,7 @@ from flask import Flask, request, render_template, jsonify
 import json
 import requests
 from datetime import datetime, timedelta
+from better_profanity import profanity
 
 
 # Class-based application configuration
@@ -29,7 +30,6 @@ CHANNEL_ENDPOINT = (
 CHANNEL_FILE = "messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
 CHANNEL_MAX_MESSAGE_AGE = 7
-
 
 @app.cli.command("register")
 def register_command():
@@ -151,8 +151,8 @@ def send_message():
     messages = read_messages()
     messages.append(
         {
-            "content": message["content"],
-            "sender": message["sender"],
+            "content": profanity.censor(message["content"]),
+            "sender": profanity.censor(message["sender"]),
             "timestamp": message["timestamp"],
             "extra": extra,
         }
@@ -216,4 +216,5 @@ def init_message():
 
 if __name__ == "__main__":
     init_message()
+    profanity.load_censor_words()
     app.run(port=5001, debug=True)
