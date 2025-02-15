@@ -19,19 +19,31 @@
             // content is fetched from the university hub (works only on university network, use VPN)
             //
             const [channels, setChannels] = React.useState([]);
+            const [searchQuery, setSearchQuery] = React.useState("");
 
             React.useEffect(() => {
                 // Fetch list of channels
-                fetch("http://vm146.rz.uos.de/hub/channels") // university hub
+                fetch("http://127.0.0.1:5555/channels") // university hub
                     .then(response => response.json())
                     .then(data => setChannels(data.channels));
             }, []);  // empty list here means that this effect will run only once (you can add a variable to run it on change)
 
+
+            const filteredChannels = channels.filter(channel =>
+                channel.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
             return (
                 <div>
                     <h2>Channel List</h2>
+                    <input
+                        type="text"
+                        placeholder="Search channels"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
                     <ul>
-                        {channels.map(channel => (
+                        {filteredChannels.map(channel => (
                             <li key={channel.id}>
                                 {channel.name} (URL: {channel.endpoint}, Type: {channel.type_of_service})
                             </li>

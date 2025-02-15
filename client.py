@@ -54,7 +54,7 @@ def home_page():
 
     """
     # fetch list of channels from server
-    return render_template("home.html", channels=update_channels())
+    return render_template("react_client.html")
 
 
 @app.route("/show")
