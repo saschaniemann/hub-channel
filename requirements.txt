@@ -3,3 +3,5 @@ flask-sqlalchemy
 flask_cors
 requests
 better-profanity
+ruff
+pre-commit
