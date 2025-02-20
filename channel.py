@@ -6,6 +6,7 @@ import json
 import requests
 from datetime import datetime, timedelta, timezone
 from better_profanity import profanity
+from typing import Tuple
 
 
 # Class-based application configuration
@@ -32,6 +33,7 @@ CHANNEL_ENDPOINT = (
 CHANNEL_FILE = "messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
 CHANNEL_MAX_MESSAGE_AGE = 7
+
 
 @app.cli.command("register")
 def register_command():
@@ -119,6 +121,66 @@ def home_page():
     return jsonify(read_messages())
 
 
+def get_weather(latitude: str, longitude: str) -> Tuple[str, str]:
+    """Fetch weather info from open meteo API.
+
+    Args:
+        latitude (str): latitude of the point of interest
+        longitude (str): longitude of the point of interest
+
+    Raises:
+        Exception: if the GET request fails or 'current_weather' is not returned by open meteo API.
+
+    Returns:
+        Tuple[str, str]: temperature[°C], windspeed[km/h]
+
+    """
+    # Open Meteo API endpoint
+    url = "https://api.open-meteo.com/v1/forecast"
+
+    # parameters for the API request
+    params = {"latitude": latitude, "longitude": longitude, "current_weather": True}
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+
+        weather_data = response.json()
+        current_weather = weather_data.get("current_weather", {})
+
+        if current_weather:
+            # print(f"Temperature: {current_weather['temperature']} °C")
+            # print(f"Windspeed: {current_weather['windspeed']} km/h")
+            # print(f"Wind direction: {current_weather['winddirection']} degrees")
+            # print(f"Weather code: {current_weather['weathercode']}")
+            return current_weather["temperature"], current_weather["windspeed"]
+        else:
+            raise Exception("No weather info received!")
+
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error fetching the weather data: {e}")
+
+
+def handle_commands(message: str, messages: list) -> None:
+    """Handle commands by checking if it begins with !weather ....
+
+    Args:
+        message (str): user message
+        messages (list): all messages
+
+    """
+    if message.startswith("!weather"):
+        temperature, windspeed = get_weather("40.7128", "-74.0060")
+        messages.append(
+            {
+                "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h.",
+                "sender": "Weather",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "extra": "",
+            }
+        )
+
+
 # POST: Send a message
 @app.route("/", methods=["POST"])
 def send_message():
@@ -159,6 +221,10 @@ def send_message():
             "extra": extra,
         }
     )
+
+    # handle commands (starting with !)
+    handle_commands(message["content"], messages)
+
     save_messages(messages)
     return "OK", 200
 
@@ -199,16 +265,32 @@ def save_messages(messages):
         messages = filter_old_messages(messages)
         json.dump(messages, f)
 
-def filter_old_messages(messages):
+
+def filter_old_messages(messages: list) -> list:
+    """Filter messages by age. Old messages get deleted.
+
+    Args:
+        messages (list): all messages
+
+    Returns:
+        list: filtered messages
+
+    """
     cutoff = datetime.now(timezone.utc) - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
-    return [message for message in messages if datetime.fromisoformat(message['timestamp']) >= cutoff]
+    return [
+        message
+        for message in messages
+        if datetime.fromisoformat(message["timestamp"]) >= cutoff
+    ]
+
 
 def init_message():
+    """Save initial message."""
     inital_message = {
-            "content": "Hello to our server. Here we discuss...",
-            "sender": "Server",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+        "content": "Hello to our server. Here we discuss...",
+        "sender": "Server",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
     save_messages([inital_message])
 
 
