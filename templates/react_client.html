@@ -22,7 +22,8 @@
             const [channels, setChannels] = React.useState([]);
             const [searchQuery, setSearchQuery] = React.useState("");
 
-            React.useEffect(() => {                
+            React.useEffect(() => {  
+                              
                 // Fetch list of channels
                 fetch("http://127.0.0.1:5555/channels") // university hub
                     .then(response => response.json())
