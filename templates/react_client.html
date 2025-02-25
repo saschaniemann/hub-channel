@@ -35,6 +35,17 @@
                 channel.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
 
+            const getStatusColor = (status) => {
+                switch (status) {
+                    case true:
+                        return 'bg-green-500';
+                    case false:
+                        return 'bg-red-500';
+                    default:
+                        return 'bg-gray-500';
+                }
+            };
+
             return (
                 <div className="">
                     <div className="flex flex-col justify-between h-screen p-6">
@@ -55,10 +66,13 @@
                                     <li key={"channel-" + index + "-" + channel.name} 
                                         className={"bg-gray-200 p-2 rounded-md border-2 border-gray-400" + (!!selectedChannel && channel.endpoint == selectedChannel.endpoint ? " border-green-300 bg-green-100" : "")}
                                         onClick={() => onSelectChannel(channel)}>
+                                        <div className="flex items-center">
+                                    <div className={`w-3 h-3 rounded-full ${getStatusColor(channel.active)} mr-2`}></div>
                                         <div>
                                             <p>{channel.name}</p>
                                             <p className="text-xs text-gray-400 underline">{channel.endpoint}</p>
                                         </div>
+                                    </div>
                                     </li>
                                 ))}
                             </ul>
