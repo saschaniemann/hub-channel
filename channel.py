@@ -120,7 +120,20 @@ def home_page():
     # Fetch channels from server
     return jsonify(read_messages())
 
+
 def get_coordinates(location: str) -> Tuple[str, str]:
+    """Calculate the latitude and longitude of a location using the Open Meteo API.
+
+    Args:
+        location (str): location of interest
+
+    Raises:
+        Exception: If GET request fails.
+
+    Returns:
+        Tuple[str, str]: latitude, longitude
+
+    """
     url = "https://geocoding-api.open-meteo.com/v1/search"
 
     # parameters for the API request
@@ -190,7 +203,7 @@ def handle_commands(message, messages: list) -> None:
         messages (list): all messages
 
     """
-    content = message["content"];
+    content = message["content"]
     if content == "!weather":
         print(message)
         temperature, windspeed = get_weather(message["latitude"], message["longitude"])
@@ -203,7 +216,8 @@ def handle_commands(message, messages: list) -> None:
                     "sender": "Weather",
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                     "extra": "",
-                })
+                }
+            )
             return
         temperature, windspeed = get_weather(latitude, longitude)
     elif content.startswith("!"):
@@ -213,17 +227,20 @@ def handle_commands(message, messages: list) -> None:
                 "sender": "Server",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "extra": "",
-            })
+            }
+        )
         return
     else:
         return
     messages.append(
-            {
-                "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h.",
-                "sender": "Weather",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "extra": "",
-            })  
+        {
+            "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h.",
+            "sender": "Weather",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "extra": "",
+        }
+    )
+
 
 # POST: Send a message
 @app.route("/", methods=["POST"])

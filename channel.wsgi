@@ -1,3 +1,3 @@
 from channel import app
-application = app
 
+application = app

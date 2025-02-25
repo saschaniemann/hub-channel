@@ -1,3 +1,3 @@
 from hub import app
-application = app
 
+application = app
