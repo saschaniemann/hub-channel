@@ -167,23 +167,41 @@
             const handleSendMessage = () => {
                 // TODO: Feedback to user why message was not sent
                 if (!username || !newMessage) return;
-                var timestamp = (new Date()).toISOString().slice(0,-1) + "000+00:00";
-                
-                fetch(`${selectedChannel.endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        "Authorization": `authkey ${selectedChannel.authkey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        sender: username,
-                        content: newMessage,
-                        timestamp: timestamp,
-                    }),
-                })
-                .then(() => setNewMessage(""))
-                .then(() => setReload(Math.random()));
+                if(newMessage == "!weather")
+                {
+                    if(navigator.geolocation)
+                        navigator.geolocation.getCurrentPosition(positionCallback);
+                    //TODO Error message when browser doesnt support geolocation
+                }
+                else 
+                    postMessage(null);              
             };
+
+            const positionCallback = (position) => {
+                postMessage(position);
+            }
+
+            const postMessage = (position) => {
+                var latitude = position == null ? null : position.coords.latitude;
+                var longitude = position == null ? null : position.coords.longitude;
+                var timestamp = (new Date()).toISOString().slice(0,-1) + "000+00:00";
+                fetch(`${selectedChannel.endpoint}`, {
+                            method: 'POST',
+                            headers: {
+                                "Authorization": `authkey ${selectedChannel.authkey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                sender: username,
+                                content: newMessage,
+                                timestamp: timestamp,
+                                latitude: latitude,
+                                longitude: longitude
+                            }),
+                        })
+                        .then(() => setNewMessage(""))
+                        .then(() => setReload(Math.random()));
+            }
 
             return [
                     <h2 key="heading" className="text-xl underline">{selectedChannel.name}</h2>,

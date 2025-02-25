@@ -120,6 +120,27 @@ def home_page():
     # Fetch channels from server
     return jsonify(read_messages())
 
+def get_coordinates(location: str) -> Tuple[str, str]:
+    url = "https://geocoding-api.open-meteo.com/v1/search"
+
+    # parameters for the API request
+    params = {"name": location, "count": 1, "language": "en", "format": "json"}
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+
+        location_data = response.json().get("results", None)
+        if not location_data:
+            return None, None
+        latitude = location_data[0].get("latitude", None)
+        longitude = location_data[0].get("longitude", None)
+
+        return latitude, longitude
+
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error fetching the location data: {e}")
+
 
 def get_weather(latitude: str, longitude: str) -> Tuple[str, str]:
     """Fetch weather info from open meteo API.
@@ -161,7 +182,7 @@ def get_weather(latitude: str, longitude: str) -> Tuple[str, str]:
         raise Exception(f"Error fetching the weather data: {e}")
 
 
-def handle_commands(message: str, messages: list) -> None:
+def handle_commands(message, messages: list) -> None:
     """Handle commands by checking if it begins with !weather ....
 
     Args:
@@ -169,17 +190,40 @@ def handle_commands(message: str, messages: list) -> None:
         messages (list): all messages
 
     """
-    if message.startswith("!weather"):
-        temperature, windspeed = get_weather("40.7128", "-74.0060")
+    content = message["content"];
+    if content == "!weather":
+        print(message)
+        temperature, windspeed = get_weather(message["latitude"], message["longitude"])
+    elif content.startswith("!weather "):
+        latitude, longitude = get_coordinates(content[9:])
+        if not latitude or not longitude:
+            messages.append(
+                {
+                    "content": f"Location '{content[9:]}' not found.",
+                    "sender": "Weather",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "extra": "",
+                })
+            return
+        temperature, windspeed = get_weather(latitude, longitude)
+    elif content.startswith("!"):
         messages.append(
+            {
+                "content": f"Command '{content}' not found.",
+                "sender": "Server",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "extra": "",
+            })
+        return
+    else:
+        return
+    messages.append(
             {
                 "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h.",
                 "sender": "Weather",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "extra": "",
-            }
-        )
-
+            })  
 
 # POST: Send a message
 @app.route("/", methods=["POST"])
@@ -223,7 +267,7 @@ def send_message():
     )
 
     # handle commands (starting with !)
-    handle_commands(message["content"], messages)
+    handle_commands(message, messages)
 
     save_messages(messages)
     return "OK", 200
