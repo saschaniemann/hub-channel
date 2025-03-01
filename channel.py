@@ -26,10 +26,8 @@ app.app_context().push()  # Create an app context before initializing the app
 HUB_URL = "http://vm146.rz.uni-osnabrueck.de/hub"
 HUB_AUTHKEY = "Crr-K24d-2N"
 CHANNEL_AUTHKEY = "0987654321"
-CHANNEL_NAME = "Weather Channel"
-CHANNEL_ENDPOINT = (
-    "http://vm322.rz.uni-osnabrueck.de/u058/hub_channel/channel.wsgi"  # Don't forget to adjust in the bottom of the file
-)
+CHANNEL_NAME = "Weather you like it or not!"
+CHANNEL_ENDPOINT = "http://vm322.rz.uni-osnabrueck.de/u058/hub_channel/channel.wsgi"  # Don't forget to adjust in the bottom of the file
 CHANNEL_FILE = "messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
 CHANNEL_MAX_MESSAGE_AGE = 7
@@ -49,7 +47,7 @@ def register_command():
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
 
     # Send a POST request to server /channels
-    print(HUB_URL+"/channels")
+    print(HUB_URL + "/channels")
     print(HUB_AUTHKEY)
     print(CHANNEL_ENDPOINT)
     response = requests.post(
