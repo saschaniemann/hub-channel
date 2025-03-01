@@ -343,10 +343,11 @@ def filter_old_messages(messages: list) -> list:
     cutoff = datetime.now(timezone.utc) - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
     filtered_messages = []
     for message in messages:
-        message_time = datetime.fromisoformat(message["timestamp"])
-        if message_time.tzinfo is None:
-            message_time = message_time.replace(tzinfo=timezone.utc)
-        if message_time >= cutoff:
+        timestamp = message["timestamp"]
+        iso_message_time = datetime.fromisoformat(timestamp.rstrip("Z"))
+        if iso_message_time.tzinfo is None:
+            iso_message_time = iso_message_time.replace(tzinfo=timezone.utc)
+        if iso_message_time >= cutoff:
             filtered_messages.append(message)
     return filtered_messages
 
