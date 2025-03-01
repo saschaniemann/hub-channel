@@ -25,7 +25,7 @@
             React.useEffect(() => {  
                               
                 // Fetch list of channels
-                fetch("http://127.0.0.1:5555/channels") // university hub
+                fetch("http://vm146.rz.uni-osnabrueck.de/hub/channels") // university hub
                     .then(response => response.json())
                     .then(data => setChannels(data.channels));
             }, []);  // empty list here means that this effect will run only once (you can add a variable to run it on change)

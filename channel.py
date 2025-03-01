@@ -23,12 +23,12 @@ CORS(app)
 app.config.from_object(__name__ + ".ConfigClass")  # Configuration
 app.app_context().push()  # Create an app context before initializing the app
 
-HUB_URL = "http://127.0.0.1:5555"
-HUB_AUTHKEY = "1234567890"
+HUB_URL = "http://vm146.rz.uni-osnabrueck.de/hub"
+HUB_AUTHKEY = "Crr-K24d-2N"
 CHANNEL_AUTHKEY = "0987654321"
-CHANNEL_NAME = "The One and Only Channel"
+CHANNEL_NAME = "Weather Channel"
 CHANNEL_ENDPOINT = (
-    "http://127.0.0.1:5001"  # Don't forget to adjust in the bottom of the file
+    "http://vm322.rz.uni-osnabrueck.de/u058/hub_channel/channel.wsgi"  # Don't forget to adjust in the bottom of the file
 )
 CHANNEL_FILE = "messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
@@ -49,6 +49,9 @@ def register_command():
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
 
     # Send a POST request to server /channels
+    print(HUB_URL+"/channels")
+    print(HUB_AUTHKEY)
+    print(CHANNEL_ENDPOINT)
     response = requests.post(
         HUB_URL + "/channels",
         headers={"Authorization": "authkey " + HUB_AUTHKEY},
@@ -338,11 +341,14 @@ def filter_old_messages(messages: list) -> list:
 
     """
     cutoff = datetime.now(timezone.utc) - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
-    return [
-        message
-        for message in messages
-        if datetime.fromisoformat(message["timestamp"]) >= cutoff
-    ]
+    filtered_messages = []
+    for message in messages:
+        message_time = datetime.fromisoformat(message["timestamp"])
+        if message_time.tzinfo is None:
+            message_time = message_time.replace(tzinfo=timezone.utc)
+        if message_time >= cutoff:
+            filtered_messages.append(message)
+    return filtered_messages
 
 
 def init_message():
