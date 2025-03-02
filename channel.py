@@ -30,7 +30,7 @@ CHANNEL_NAME = "Weather you like it or not!"
 CHANNEL_ENDPOINT = "http://vm322.rz.uni-osnabrueck.de/u058/hub_channel/channel.wsgi"  # Don't forget to adjust in the bottom of the file
 CHANNEL_FILE = "hub_channel/messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
-CHANNEL_MAX_MESSAGE_AGE = 7
+CHANNEL_MAX_MESSAGE_AGE = 1
 
 
 @app.cli.command("register")
@@ -346,7 +346,7 @@ def filter_old_messages(messages: list) -> list:
         list: filtered messages
 
     """
-    cutoff = datetime.now(timezone.utc) - timedelta(seconds=CHANNEL_MAX_MESSAGE_AGE)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
     filtered_messages = []
     for message in messages:
         timestamp = message["timestamp"]
