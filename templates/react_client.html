@@ -22,21 +22,18 @@
             //
             const [channels, setChannels] = React.useState([]);
             const [searchQuery, setSearchQuery] = React.useState("");
-
-            React.useEffect(() => {  
-                              
+            const [statusCode, setStatusCode] = React.useState([]);
+	        React.useEffect(() => {  
                 // Fetch list of channels
                 fetch("http://vm146.rz.uni-osnabrueck.de/hub/channels") // university hub
                     .then(response => response.json())
-                    .then(data => setChannels(data.channels));
+                    .then(data => setChannels(data.channels))
             }, []);  // empty list here means that this effect will run only once (you can add a variable to run it on change)
-
-
             const filteredChannels = channels.filter(channel =>
                 channel.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
-
-            const getStatusColor = (status) => {
+            const getStatusColor = (channel) => {
+                let status = false;
                 switch (status) {
                     case true:
                         return 'bg-green-500';
@@ -68,7 +65,7 @@
                                         className={"bg-gray-200 p-2 rounded-md border-2 border-gray-400" + (!!selectedChannel && channel.endpoint == selectedChannel.endpoint ? " border-green-300 bg-green-100" : "")}
                                         onClick={() => onSelectChannel(channel)}>
                                         <div className="flex items-center">
-                                    <div className={`w-3 h-3 rounded-full ${getStatusColor(channel.active)} mr-2`}></div>
+                                    <div className={`w-3 h-3 rounded-full ${getStatusColor(channel)} mr-2`}></div>
                                         <div>
                                             <p>{channel.name}</p>
                                             <p className="text-xs text-gray-400 underline">{channel.endpoint}</p>
