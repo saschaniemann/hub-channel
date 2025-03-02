@@ -1,3 +1,3 @@
-from hub_channel.channel import app
+from hub_channel.client import app
 
 application = app
