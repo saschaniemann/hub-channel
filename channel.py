@@ -205,42 +205,50 @@ def handle_commands(message, messages: list) -> None:
 
     """
     content = message["content"]
+    if content == "":
+        return
     if content == "!weather":
         print(message)
         temperature, windspeed = get_weather(message["latitude"], message["longitude"])
+        messages.append(
+            {
+                "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h at your place.",
+                "sender": "Weather",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "extra": "",
+            }
+        )
     elif content.startswith("!weather "):
-        latitude, longitude = get_coordinates(content[9:])
+        place = profanity.censor(content[9:])
+        latitude, longitude = get_coordinates(place)
         if not latitude or not longitude:
             messages.append(
                 {
-                    "content": f"Location '{content[9:]}' not found.",
+                    "content": f"Location '{place}' not found.",
                     "sender": "Weather",
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                     "extra": "",
                 }
             )
-            return
-        temperature, windspeed = get_weather(latitude, longitude)
+        else:
+            temperature, windspeed = get_weather(latitude, longitude)
+            messages.append(
+                {
+                    "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h in {place}.",
+                    "sender": "Weather",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "extra": "",
+                }
+            )
     elif content.startswith("!"):
         messages.append(
             {
-                "content": f"Command '{content}' not found.",
+                "content": f"Command '{profanity.censor(content)}' not found.",
                 "sender": "Server",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "extra": "",
             }
         )
-        return
-    else:
-        return
-    messages.append(
-        {
-            "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h.",
-            "sender": "Weather",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "extra": "",
-        }
-    )
 
 
 # POST: Send a message
@@ -353,7 +361,9 @@ def filter_old_messages(messages: list) -> list:
 def init_message():
     """Save initial message."""
     inital_message = {
-        "content": "Hello to our server. Here we discuss...",
+        "content": """Hello to our server. Here we discuss everything to do with the weather. No matter if it's in your area or anywhere in the world.
+        
+        If you want to know the weather in a specific location, just type !weather followed by the location. Or just leave out the location to get the weather at your place.""",
         "sender": "Server",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
