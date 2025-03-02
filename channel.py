@@ -47,9 +47,6 @@ def register_command():
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
 
     # Send a POST request to server /channels
-    print(HUB_URL + "/channels")
-    print(HUB_AUTHKEY)
-    print(CHANNEL_ENDPOINT)
     response = requests.post(
         HUB_URL + "/channels",
         headers={"Authorization": "authkey " + HUB_AUTHKEY},
@@ -208,9 +205,6 @@ def handle_commands(message, messages: list) -> None:
     if content == "":
         return
     if content == "!weather":
-        print(message["latitude"])
-        print(message["longitude"])
-        print(message)
         temperature, windspeed = get_weather(message["latitude"], message["longitude"])
         messages.append(
             {
