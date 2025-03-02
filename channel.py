@@ -28,7 +28,7 @@ HUB_AUTHKEY = "Crr-K24d-2N"
 CHANNEL_AUTHKEY = "0987654321"
 CHANNEL_NAME = "Weather you like it or not!"
 CHANNEL_ENDPOINT = "http://vm322.rz.uni-osnabrueck.de/u058/hub_channel/channel.wsgi"  # Don't forget to adjust in the bottom of the file
-CHANNEL_FILE = "messages.json"
+CHANNEL_FILE = "hub_channel/messages.json"
 CHANNEL_TYPE_OF_SERVICE = "aiweb24:chat"
 CHANNEL_MAX_MESSAGE_AGE = 7
 
@@ -346,14 +346,16 @@ def filter_old_messages(messages: list) -> list:
         list: filtered messages
 
     """
-    cutoff = datetime.now(timezone.utc) - timedelta(days=CHANNEL_MAX_MESSAGE_AGE)
+    cutoff = datetime.now(timezone.utc) - timedelta(seconds=CHANNEL_MAX_MESSAGE_AGE)
     filtered_messages = []
     for message in messages:
         timestamp = message["timestamp"]
         iso_message_time = datetime.fromisoformat(timestamp.rstrip("Z"))
         if iso_message_time.tzinfo is None:
             iso_message_time = iso_message_time.replace(tzinfo=timezone.utc)
-        if iso_message_time >= cutoff:
+        if iso_message_time >= cutoff or (
+            message["extra"] and message["extra"] == "INIT"
+        ):
             filtered_messages.append(message)
     return filtered_messages
 
@@ -366,6 +368,7 @@ def init_message():
         If you want to know the weather in a specific location, just type !weather followed by the location. Or just leave out the location to get the weather at your place.""",
         "sender": "Server",
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "extra": "INIT",
     }
     save_messages([inital_message])
 
