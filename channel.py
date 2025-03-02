@@ -205,6 +205,8 @@ def handle_commands(message, messages: list) -> None:
 
     """
     content = message["content"]
+    if content == "":
+        return
     if content == "!weather":
         print(message)
         temperature, windspeed = get_weather(message["latitude"], message["longitude"])
