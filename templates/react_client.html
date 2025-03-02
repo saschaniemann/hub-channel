@@ -27,13 +27,32 @@
                 // Fetch list of channels
                 fetch("http://vm146.rz.uni-osnabrueck.de/hub/channels") // university hub
                     .then(response => response.json())
-                    .then(data => setChannels(data.channels))
+                    .then(data => {
+                        // get status code of all urls
+                        return Promise.all(
+                            data.channels.map(channel_data => fetch(`${channel_data.endpoint}`, {
+                                method : "HEAD",
+                                headers: {
+                                    "Authorization": `authkey ${channel_data.authkey}`
+                                }
+                            })
+                            .then(response => (
+                                {...channel_data, active : (response.status == "200")}
+                            ))
+                            .catch(error => (
+                                {...channel_data, active : false}))
+                            )).then(results => {
+                                setChannels(results)
+                            }
+                        );
+                    })
             }, []);  // empty list here means that this effect will run only once (you can add a variable to run it on change)
             const filteredChannels = channels.filter(channel =>
                 channel.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
-            const getStatusColor = (channel) => {
-                let status = false;
+            console.log(channels)
+            const getStatusColor = (status) => {
+                console.log(status)
                 switch (status) {
                     case true:
                         return 'bg-green-500';
@@ -65,7 +84,7 @@
                                         className={"bg-gray-200 p-2 rounded-md border-2 border-gray-400" + (!!selectedChannel && channel.endpoint == selectedChannel.endpoint ? " border-green-300 bg-green-100" : "")}
                                         onClick={() => onSelectChannel(channel)}>
                                         <div className="flex items-center">
-                                    <div className={`w-3 h-3 rounded-full ${getStatusColor(channel)} mr-2`}></div>
+                                    <div className={`w-3 h-3 rounded-full ${getStatusColor(channel.act)} mr-2`}></div>
                                         <div>
                                             <p>{channel.name}</p>
                                             <p className="text-xs text-gray-400 underline">{channel.endpoint}</p>
