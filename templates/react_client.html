@@ -156,8 +156,9 @@
 
             const timeAgo = (timestamp) => {
                 const now = new Date();
-                const past = new Date(timestamp);
-                const seconds = Math.floor((now - past) / 1000);
+                const utcTimestamp = (timestamp.endsWith("+00:00") || timestamp.endsWith("Z")) ? timestamp : timestamp + "+00:00";
+                const past = new Date(utcTimestamp);
+                const seconds = Math.floor((now - past) / 1000) >= 0 ? Math.floor((now - past) / 1000) : 0;
                 let interval = Math.floor(seconds / 31536000);
                 
                 if (interval >= 1) {
