@@ -291,10 +291,11 @@ def send_message():
         return "No sender", 400
     if not "timestamp" in message:
         return "No timestamp", 400
+    if message["content"].strip() == "":
+        return "OK", 200
+    extra = None
     if "extra" in message:
         extra = message["extra"]
-    else:
-        extra = None
 
     # Add message to messages
     messages = read_messages()

@@ -157,7 +157,17 @@
 
             const timeAgo = (timestamp) => {
                 const now = new Date();
-                const utcTimestamp = (timestamp.endsWith("+00:00") || timestamp.endsWith("Z")) ? timestamp : timestamp + "+00:00";
+                let utcTimestamp;
+                if(typeof timestamp == "string"){
+                    utcTimestamp = (timestamp.endsWith("+00:00") || timestamp.endsWith("Z")) ? timestamp : timestamp + "+00:00";
+                } else if(typeof timestamp == "number"){
+                    //assume unix timestamp
+                    const date = new Date(timestamp*1000);
+                    utcTimestamp = date.toISOString();
+                } else {
+                    //no known format
+                    return "no valid time format"
+                }
                 const past = new Date(utcTimestamp);
                 const seconds = Math.floor((now - past) / 1000) >= 0 ? Math.floor((now - past) / 1000) : 0;
                 let interval = Math.floor(seconds / 31536000);
