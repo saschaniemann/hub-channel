@@ -301,9 +301,6 @@
                             onChange={e => setNewMessage(e.target.value)}
                             onKeyPress={event => {
                                 if (event.key === 'Enter') {
-                                    // if (event.shiftKey) {
-                                    //     return;
-                                    // }
                                     handleSendMessage();
                                 }
                             }}

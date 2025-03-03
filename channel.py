@@ -167,7 +167,6 @@ def get_weather(latitude: str, longitude: str) -> Tuple[str, str]:
         Tuple[str, str]: temperature[°C], windspeed[km/h]
 
     """
-    # Open Meteo API endpoint
     url = "https://api.open-meteo.com/v1/forecast"
 
     # parameters for the API request
@@ -181,10 +180,6 @@ def get_weather(latitude: str, longitude: str) -> Tuple[str, str]:
         current_weather = weather_data.get("current_weather", {})
 
         if current_weather:
-            # print(f"Temperature: {current_weather['temperature']} °C")
-            # print(f"Windspeed: {current_weather['windspeed']} km/h")
-            # print(f"Wind direction: {current_weather['winddirection']} degrees")
-            # print(f"Weather code: {current_weather['weathercode']}")
             return current_weather["temperature"], current_weather["windspeed"]
         else:
             raise Exception("No weather info received!")
@@ -204,7 +199,7 @@ def handle_commands(message, messages: list) -> None:
     content = message["content"].strip()
     if content == "":
         return
-    if content.strip() == "!weather":
+    if content == "!weather":
         # our client didnt get the location
         if "extra" in message and message["extra"] == "ERROR":
             messages.append(
