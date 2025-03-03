@@ -197,8 +197,6 @@ def handle_commands(message, messages: list) -> None:
 
     """
     content = message["content"].strip()
-    if content == "":
-        return
     if content == "!weather":
         # our client didnt get the location
         if "extra" in message and message["extra"] == "ERROR":
@@ -365,7 +363,7 @@ def filter_old_messages(messages: list) -> list:
         if iso_message_time.tzinfo is None:
             iso_message_time = iso_message_time.replace(tzinfo=timezone.utc)
         if iso_message_time >= cutoff or (
-            message["extra"] and message["extra"] == "INIT"
+            "extra" in message and message["extra"] == "INIT"
         ):
             filtered_messages.append(message)
     return filtered_messages
@@ -374,9 +372,9 @@ def filter_old_messages(messages: list) -> list:
 def init_message():
     """Save initial message."""
     inital_message = {
-        "content": """Hello to our server. Here we discuss everything to do with the weather. No matter if it's in your area or anywhere in the world.
+        "content": """Welcome to our server. Here we discuss everything that has something to do with the weather. No matter if it's in your area or anywhere in the world.
         
-        If you want to know the weather in a specific location, just type !weather followed by the location. Or just leave out the location to get the weather at your place.""",
+        If you want to know the weather in a specific location, just type !weather followed by the location. Or just leave out the location to get the weather at your place. Note: getting the weather at without providing a location only works on a https connection because otherwise your browser will not allow you to share your geolocation.""",
         "sender": "Server",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "extra": "INIT",
@@ -391,4 +389,4 @@ def init_message():
 if __name__ == "__main__":
     init_message()
     profanity.load_censor_words()
-    app.run(port=5001, debug=True)
+    # app.run(port=5001, debug=True)
