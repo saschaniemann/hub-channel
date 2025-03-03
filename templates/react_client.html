@@ -202,13 +202,34 @@
                 if (!username || !newMessage) return;
                 if(newMessage == "!weather")
                 {
-                    if(navigator.geolocation)
-                        navigator.geolocation.getCurrentPosition(positionCallback);
-                    //TODO Error message when browser doesnt support geolocation
+                    if(navigator.geolocation){
+                        navigator.geolocation.getCurrentPosition(positionCallback, errorCallback);
+                    } else {
+
+                    }
                 }
                 else 
                     postMessage(null);              
             };
+
+            const errorCallback = (error) => {
+                var timestamp = (new Date()).toISOString().slice(0,-1) + "000+00:00";
+                fetch(`${selectedChannel.endpoint}`, {
+                            method: 'POST',
+                            headers: {
+                                "Authorization": `authkey ${selectedChannel.authkey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                sender: username,
+                                content: newMessage,
+                                timestamp: timestamp,
+                                extra: "ERROR",
+                            }),
+                        })
+                        .then(() => setNewMessage(""))
+                        .then(() => setReload(Math.random()));
+            }
 
             const positionCallback = (position) => {
                 postMessage(position);

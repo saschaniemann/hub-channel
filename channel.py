@@ -205,15 +205,34 @@ def handle_commands(message, messages: list) -> None:
     if content == "":
         return
     if content == "!weather":
-        temperature, windspeed = get_weather(message["latitude"], message["longitude"])
-        messages.append(
-            {
-                "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h at your place.",
-                "sender": "Weather",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "extra": "",
-            }
-        )
+        # our client didnt get the location
+        if "extra" in message and message["extra"] == "ERROR":
+            messages.append(
+                {
+                    "content": f"Sorry we were not able to get your location. Try to add your location as parameter.",
+                    "sender": "Weather",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "extra": "",
+                    })
+        # our client got the location
+        elif "latitude" in message and "longitude" in message:
+            temperature, windspeed = get_weather(message["latitude"], message["longitude"])
+            messages.append(
+                {
+                    "content": f"Today it is going to be {temperature}°C with a windspeed of {windspeed}km/h at your place.",
+                    "sender": "Weather",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "extra": "",
+                    })
+        # other client used
+        else:
+            messages.append(
+                {
+                    "content": f"Sorry we were not able to get your location. Try to add your location as parameter.",
+                    "sender": "Weather",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "extra": "",
+                    })
     elif content.startswith("!weather "):
         place = profanity.censor(content[9:])
         latitude, longitude = get_coordinates(place)
