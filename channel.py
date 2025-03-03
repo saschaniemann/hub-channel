@@ -201,10 +201,10 @@ def handle_commands(message, messages: list) -> None:
         messages (list): all messages
 
     """
-    content = message["content"]
+    content = message["content"].strip()
     if content == "":
         return
-    if content == "!weather":
+    if content.strip() == "!weather":
         # our client didnt get the location
         if "extra" in message and message["extra"] == "ERROR":
             messages.append(

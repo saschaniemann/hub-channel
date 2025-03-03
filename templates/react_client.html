@@ -22,15 +22,16 @@
             //
             const [channels, setChannels] = React.useState([]);
             const [searchQuery, setSearchQuery] = React.useState("");
-            const [statusCode, setStatusCode] = React.useState([]);
 	        React.useEffect(() => {  
                 // Fetch list of channels
                 fetch("http://vm146.rz.uni-osnabrueck.de/hub/channels") // university hub
                     .then(response => response.json())
                     .then(data => {
-                        // get status code of all urls
+                        // remove duplicates (same endpoint)
+                        const uniqueClients = [...new Map(data.channels.map(chan => [chan.endpoint, chan])).values()];
+                        // get status code of all clients
                         return Promise.all(
-                            data.channels.map(channel_data => fetch(`${channel_data.endpoint}`, {
+                            uniqueClients.map(channel_data => fetch(`${channel_data.endpoint}`, {
                                 method : "HEAD",
                                 headers: {
                                     "Authorization": `authkey ${channel_data.authkey}`
@@ -181,7 +182,7 @@
                     return interval === 1 ? "1 minute ago" : interval + " minutes ago";
                 }
                 return seconds === 1 ? "1 second ago" : seconds + " seconds ago";
-            }
+            };
 
             // Creates a hash from the string
             const stringToHexColor = (str) => {
@@ -196,17 +197,15 @@
                     color += ('00' + value.toString(16)).slice(-2);
                 }
                 return color;
-            }
+            };
 
             const handleSendMessage = () => {
-                // TODO: Feedback to user why message was not sent
                 if (!username || !newMessage) return;
-                if(newMessage == "!weather")
-                {
+                if(newMessage.trim() == "!weather"){
                     if(navigator.geolocation){
                         navigator.geolocation.getCurrentPosition(positionCallback, errorCallback);
                     } else {
-
+                        errorCallback();
                     }
                 }
                 else 
@@ -230,11 +229,11 @@
                         })
                         .then(() => setNewMessage(""))
                         .then(() => setReload(Math.random()));
-            }
+            };
 
             const positionCallback = (position) => {
                 postMessage(position);
-            }
+            };
 
             const postMessage = (position) => {
                 var latitude = position == null ? null : position.coords.latitude;
@@ -256,7 +255,7 @@
                         })
                         .then(() => setNewMessage(""))
                         .then(() => setReload(Math.random()));
-            }
+            };
 
             return [
                     <h2 key="heading" className="text-xl underline">{selectedChannel.name}</h2>,
